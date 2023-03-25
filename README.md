@@ -13,7 +13,11 @@ This is a Flask app integrated with Dash, which allows users to upload a CSV or 
 * Filter the data by categorical and date columns.
 * Display the filtered data in the data table and KPI container.
 
-[![Exploratory Data Analysis Tool][product-screenshot]](https://github.com/hipnologo/eda-tool)
+<div align="center">
+  <a href="https://github.com/hipnologo/eda-tool">
+    <img src="images/eda-screenshot.png" alt="Logo" width="100" height="100">
+  </a>
+</div>
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
