@@ -15,7 +15,7 @@ This is a Flask app integrated with Dash, which allows users to upload a CSV or 
 
 <div align="center">
   <a href="https://github.com/hipnologo/eda-tool">
-    <img src="images/eda-screenshot.png" alt="Logo" width="100" height="100">
+    <img src="images/eda-screenshot.png" alt="Exploratory Data Analysis Tool"> <!--  width="100" height="100"> -->
   </a>
 </div>
 
