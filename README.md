@@ -1,9 +1,9 @@
 # EDA Tool
 
 [![License: Apache License 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Forks](https://img.shields.io/github/forks/hipnologo/AutoMLWizard)](https://github.com/hipnologo/AutoMLWizard/network/members)
-[![Stars](https://img.shields.io/github/stars/hipnologo/AutoMLWizard)](https://github.com/hipnologo/AutoMLWizard/stargazers)
-[![Issues](https://img.shields.io/github/issues/hipnologo/AutoMLWizard)](https://github.com/hipnologo/AutoMLWizard/issues)
+[![Forks](https://img.shields.io/github/forks/hipnologo/eda-tool)](https://github.com/hipnologo/eda-tool/network/members)
+[![Stars](https://img.shields.io/github/stars/hipnologo/eda-tool)](https://github.com/hipnologo/eda-tool/stargazers)
+[![Issues](https://img.shields.io/github/issues/hipnologo/eda-tool)](https://github.com/hipnologo/eda-tool/issues)
 
 This is a Flask app integrated with Dash, which allows users to upload a CSV or Excel file, and then filter and display the data on a Dashboard page. The app includes the following features:
 
@@ -83,6 +83,6 @@ Distributed under the Apache License 2.0. See `LICENSE` for more information.
 
 Fabio Carvalho - [@fabioac](https://twitter.com/fabioac)
 
-Project Link: [https://github.com/hipnologo/AutoMLWizard](https://github.com/hipnologo/AutoMLWizard)
+Project Link: [https://github.com/hipnologo/eda-tool](https://github.com/hipnologo/eda-tool)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
