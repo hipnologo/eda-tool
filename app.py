@@ -1,14 +1,29 @@
 import os
+import io
 import json
 import base64
 from urllib.parse import urlencode, unquote
 from werkzeug.utils import secure_filename
 import pandas as pd
-from flask import Flask, request, render_template, redirect, url_for, session
+from flask import Flask, request, render_template, redirect, url_for, session, make_response
 import dash
 from dash import html, dcc, dash_table
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
+import plotly.express as px
+
+"""
+A web-based exploratory data analysis tool that allows users to upload a CSV or Excel file and visualize its contents using interactive charts and tables.
+
+The app uses the Flask web framework and the Dash visualization library to provide a user-friendly interface. It allows users to filter data based on categorical and date columns and to aggregate numeric data by different categories. It also provides key performance indicators (KPIs) for the selected categories.
+
+The app saves uploaded files as pickled data frames, which can be accessed and modified as needed.
+
+This code defines the Flask server and Dash app for the exploratory data analysis tool. The Flask server handles file uploads and serves the Dash app, which provides the interactive data visualization.
+
+Author: Fabio Carvalho
+GitHub: github.com/hipnologo
+""" 
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
@@ -23,7 +38,7 @@ def allowed_file(filename):
 
 def process_dataframe(df):
     numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
-    categorical_cols = df.select_dtypes(include=['object']).columns.tolist()
+    categorical_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
     date_cols = df.select_dtypes(include=['datetime']).columns.tolist()
     
     cat_unique_values = {}
@@ -111,10 +126,11 @@ def serve_layout():
     numeric_cols, categorical_cols, date_cols, cat_unique_values = process_dataframe(df)
 
     # Debugging
-    print(f"serve_layout - numeric_cols: {numeric_cols}")
-    print(f"serve_layout - categorical_cols: {categorical_cols}")
-    print(f"serve_layout - date_cols: {date_cols}")
-    print(f"serve_layout - cat_unique_values: {cat_unique_values}")
+    if DEBUG == True:
+        print(f"serve_layout - numeric_cols: {numeric_cols}")
+        print(f"serve_layout - categorical_cols: {categorical_cols}")
+        print(f"serve_layout - date_cols: {date_cols}")
+        print(f"serve_layout - cat_unique_values: {cat_unique_values}")
 
     return html.Div([
         dcc.Location(id='url', refresh=False),
@@ -133,6 +149,7 @@ def serve_layout():
                     options=[{'label': col, 'value': col} for col in categorical_cols],
                     placeholder='Select a categorical column'
                 ),
+                dcc.Input(id='categorical-search', placeholder='Search values...', type='text', debounce=True),
                 dcc.Dropdown(id='categorical-filter', multi=True, placeholder='Select values to filter'),
             ], className='col-md-4'),
             html.Div([
@@ -150,6 +167,20 @@ def serve_layout():
                     placeholder='Select a column for aggregation'
                 ),
             ], className='col-md-4'),
+            html.Div([
+                dcc.Dropdown(
+                    id='x-axis-dropdown',
+                    options=[{'label': col, 'value': col} for col in numeric_cols],
+                    placeholder='Select a numeric column for x-axis'
+                ),
+                dcc.Dropdown(
+                    id='y-axis-dropdown',
+                    options=[{'label': col, 'value': col} for col in numeric_cols],
+                    placeholder='Select a numeric column for y-axis'
+                ),
+            ], className='col-md-4'),
+            dbc.Button("Export Data", id="export-button", color="primary"), # Export button
+            dcc.Graph(id='chart'), # Show the chart
         ], className='row'),
         html.Br(),
         dash_table.DataTable(
@@ -166,28 +197,56 @@ def serve_layout():
     ])
 
 @dash_app.callback(
+    Output('chart', 'figure'),
+    [Input('x-axis-dropdown', 'value'),
+     Input('y-axis-dropdown', 'value'),
+     Input('data-table', 'data'),
+     Input('data-table', 'columns')])
+def update_chart(x_axis_col, y_axis_col, data, columns):
+    df = pd.DataFrame(data, columns=[col['id'] for col in columns])
+    numeric_cols, categorical_cols, _, _ = process_dataframe(df)
+
+    if x_axis_col in categorical_cols and y_axis_col in numeric_cols:
+        fig = px.bar(df, x=x_axis_col, y=y_axis_col, title="Bar Chart")
+        fig.update_traces(hovertemplate="<b>%{x}</b><br>%{y:.2f}")
+    elif x_axis_col in numeric_cols and y_axis_col in numeric_cols:
+        fig = px.scatter(df, x=x_axis_col, y=y_axis_col, title="Scatter Plot")
+        fig.update_traces(hovertemplate="<b>%{x}</b><br>%{y:.2f}")
+    else:
+        fig = {}
+    return fig
+
+@dash_app.callback(
     [Output('categorical-filter', 'options'),
      Output('categorical-filter', 'value')],
-    [Input('categorical-column', 'value')],
+    [Input('categorical-column', 'value'),
+     Input('categorical-search', 'value')],
     [State('cat-unique-values', 'data')])
-def update_categorical_filter(selected_column, cat_unique_values):
+def update_categorical_filter(selected_column, search_value, cat_unique_values):
+    if DEBUG == True:
+        print(f"selected_column: {selected_column}") # Debugging
+        print(f"search_value: {search_value}") # Debugging
+        print(f"cat_unique_values: {cat_unique_values}") # Debugging
+        
     if selected_column is None:
         return [], []
-    if DEBUG == True:
-        print(f"cat_unique_values: {cat_unique_values}") # Debugging
-    options = [{'label': value, 'value': value} for value in cat_unique_values[selected_column]]
+    options = [{'label': value, 'value': value} for value in cat_unique_values[selected_column]
+               if search_value.lower() in value.lower()]
     return options, []
+
 @dash_app.callback(
     [Output('data-table', 'data'),
      Output('data-table', 'columns'),
      Output('kpi-container', 'children')], 
     [Input('categorical-filter', 'value'),
      Input('date-range-filter', 'start_date'),
-     Input('date-range-filter', 'end_date')],
+     Input('date-range-filter', 'end_date'),
+     Input('aggregation-column', 'value'),
+     Input('export-button', 'n_clicks')],
     [State('categorical-column', 'value'),
      State('date-column', 'value'),
      State('session-id', 'data')]) 
-def update_data_table(cat_filter_values, start_date, end_date, cat_col, date_col, session_id):
+def update_data_table(cat_filter_values, start_date, end_date, n_clicks, agg_col, cat_col, date_col, session_id):
     df = load_dataframe(session_id)
     if DEBUG == True:
         print(f"df: {df.head()}") # Debugging
@@ -195,6 +254,8 @@ def update_data_table(cat_filter_values, start_date, end_date, cat_col, date_col
         df = df[df[cat_col].isin(cat_filter_values)]
     if date_col and start_date and end_date:
         df = df[(df[date_col] >= start_date) & (df[date_col] <= end_date)]
+    if agg_col:
+        df = df.groupby([cat_col, date_col]).agg({agg_col: 'sum'}).reset_index()
     columns = [{'name': col, 'id': col} for col in df.columns]
     data = df.to_dict('records')
     kpi_container = []
@@ -205,7 +266,16 @@ def update_data_table(cat_filter_values, start_date, end_date, cat_col, date_col
                 html.H4(f'Sum of {col} by {cat_col}'),
                 dbc.Table.from_dataframe(grouped[col].reset_index(), striped=True, bordered=True, hover=True)
             ], style={'display': 'inline-block', 'padding': '0 30px'}))
-    return data, columns, kpi_container
+    # Export data to CSV
+    if n_clicks:
+        csv = df.to_csv(index=False)
+        buf = io.StringIO(csv)
+        resp = make_response(buf.getvalue())
+        resp.headers["Content-Disposition"] = "attachment; filename=data.csv"
+        resp.headers["Content-Type"] = "text/csv"
+        return data, columns, kpi_container, resp
+    else:
+        return data, columns, kpi_container
 
 if __name__ == '__main__':
     app.run(debug=True)

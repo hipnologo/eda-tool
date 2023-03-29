@@ -10,6 +10,7 @@
     <style>
         body {
             background-color: #f8f9fa;
+            font-family: 'Roboto', sans-serif;
         }
         .top-bar {
             background-color: #343a40;
@@ -27,9 +28,49 @@
             background-color: white;
             border-radius: 5px;
             box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.1);
+            text-align: center;
         }
         .upload-container h1 {
             margin-bottom: 30px;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .form-control {
+            font-size: 1.5rem;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: none;
+            box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.1);
+        }
+        .btn-upload {
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 5px;
+            border: none;
+            box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.1);
+            background-color: #191970;
+            color: white;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .btn-upload:hover {
+            background-color: #2a52be;
+        }
+        .file-input-label {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            cursor: pointer;
+            color: #23297a;
+        }
+        .file-input-label:hover {
+            text-decoration: underline;
+        }
+        .file-input-label.dragover {
+            background-color: #f8f9fa;
+            border: 2px dashed #28a745;
         }
     </style>
 </head>
@@ -37,17 +78,21 @@
     <div class="top-bar">
         <h3>Exploratory Data Analysis Tool</h3>
     </div>
-    <div class="upload-container">
+    <div class="upload-container" id="upload-container">
         <h1>Upload an Excel or CSV file</h1>
         <form method="POST" enctype="multipart/form-data">
-            <div class="mb-3">
-                <input type="file" class="form-control" name="file" required>
+            <label for="file-input" class="file-input-label">
+                <!-- <span>Choose a file</span> -->
+                <input type="file" id="file-input" class="form-control visually-hidden" name="file" required>
+            </label>
+            <div class="d-flex justify-content-center align-items-center flex-column">
+                <p>Choose a file or drag and drop a file here</p>
+                <div class="file-upload-icon mb-3">
+                    <i class="bi bi-cloud-upload"></i>
+                </div>
+                <input type="submit" class="btn-upload" value="Upload">
             </div>
-            <div class="d-grid">
-                <input type="submit" class="btn btn-lg btn-success" value="Upload">
-            </div>
-        </form>
-    </div>
+        </form>        
     <!-- Add Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz4fnFO9gybB6KjCmrwLeGT6M0Z6GFq9zD06kc/tftFf19TOAs2zVinnD/C" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js" integrity="sha384-cn7l7gDp0eyniUwwAZgrzD06kc/tftFf19TOAs2zVinnD/C7E91j9yyk5//jjpt/" crossorigin="anonymous"></script>

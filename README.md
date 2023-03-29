@@ -1,11 +1,15 @@
 # EDA Tool
 
+This is a Flask app integrated with Dash, which allows users to upload a CSV or Excel file, and then filter and display the data on a Dashboard page. 
+
 [![License: Apache License 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Forks](https://img.shields.io/github/forks/hipnologo/eda-tool)](https://github.com/hipnologo/eda-tool/network/members)
 [![Stars](https://img.shields.io/github/stars/hipnologo/eda-tool)](https://github.com/hipnologo/eda-tool/stargazers)
 [![Issues](https://img.shields.io/github/issues/hipnologo/eda-tool)](https://github.com/hipnologo/eda-tool/issues)
 
-This is a Flask app integrated with Dash, which allows users to upload a CSV or Excel file, and then filter and display the data on a Dashboard page. The app includes the following features:
+It is a web-based exploratory data analysis tool that allows users to upload a CSV or Excel file and visualize its contents using interactive charts and tables. It uses the Flask web framework and the Dash visualization library to provide a user-friendly interface. The app allows users to filter data based on categorical and date columns and to aggregate numeric data by different categories. It also provides key performance indicators (KPIs) for the selected categories. The app saves uploaded files as pickled data frames, which can be accessed and modified as needed.
+
+The app includes the following features:
 
 * Upload a file and save it in a session-specific directory.
 * Read the uploaded file and process the data.
